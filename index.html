@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Data</title>
+</head>
+<body>
+    <h1>Received Data</h1>
+    <pre id="dataDisplay"></pre>
+    <script>
+        async function fetchData() {
+            const response = await fetch('/api/data');
+            const data = await response.json();
+            document.getElementById('dataDisplay').textContent = `
+                Email: ${data.mailCustomer}
+                Customer Name: ${data.customerName}
+                Sales Rep: ${data.salesRep}
+                Model: ${data.model}
+                Elevation: ${data.elevation}
+            `;
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>
