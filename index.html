@@ -3,11 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Display Data</title>
+    <title>Generate Quote</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>Received Data</h1>
-    <pre id="dataDisplay"></pre>
+    <div class="container">
+        <h1>Generate Quote</h1>
+        <form id="quoteForm" action="/submit" method="post">
+            <div class="form-group">
+                <label for="mail">Email:</label>
+                <input type="email" id="mail" name="mailCustomer" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customername">Customer Name:</label>
+                <input type="text" id="customername" name="customerName" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="salesrep">Sales Rep:</label>
+                <input type="text" id="salesrep" name="salesRep" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="model">Model:</label>
+                <input type="text" id="model" name="model" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="elevation">Elevation:</label>
+                <input type="text" id="elevation" name="elevation" required>
+            </div>
+            
+            <button type="submit" class="btn">Generate Quote</button>
+        </form>
+
+        <h2>Received Data</h2>
+        <pre id="dataDisplay"></pre>
+    </div>
+
     <script>
         async function fetchData() {
             const response = await fetch('/api/data');
@@ -20,6 +54,36 @@
                 Elevation: ${data.elevation}
             `;
         }
+
+        document.getElementById('quoteForm').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const headers = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            };
+            const body = new URLSearchParams(formData).toString();
+
+            const response = await fetch('/submit', {
+                method: 'POST',
+                headers: headers,
+                body: body
+            });
+
+            if (response.ok) {
+                // Trigger download of the HTML file
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'QUOTATION.html';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            } else {
+                alert('Error generating quote');
+            }
+        });
 
         fetchData();
     </script>

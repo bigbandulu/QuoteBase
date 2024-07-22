@@ -1,22 +1,13 @@
 const express = require('express');
 const path = require('path');
-const axios = require('axios'); // Ajouté pour gérer les requêtes HTTP
+const axios = require('axios');
 const app = express();
 const port = 3000;
 
-// Middleware pour capturer le texte brut
-app.use((req, res, next) => {
-    let rawBody = '';
-    req.on('data', chunk => {
-        rawBody += chunk.toString(); // Convertit le buffer en chaîne de caractères
-    });
-    req.on('end', () => {
-        req.rawBody = rawBody;
-        next();
-    });
-});
-
 app.use(express.json());
+
+// Servir les fichiers statiques de la racine
+app.use(express.static(path.join(__dirname)));
 
 let receivedData = {}; // Variable pour stocker les données reçues
 
@@ -27,38 +18,36 @@ app.get('/', (req, res) => {
 
 // Route pour recevoir les données POST
 app.post('/submit', (req, res) => {
-    console.log('POST request received (raw body):', req.rawBody); // Affiche le texte brut dans le terminal
+    console.log('POST request received (raw body):', req.rawBody);
 
-    // Extraction des valeurs des headers
     const mailCustomer = req.headers['mail'];
     const customerName = req.headers['customername'];
     const salesRep = req.headers['salesrep'];
-    const Model = req.headers['model'];
-    const Elevation = req.headers['elevation'];
+    const model = req.headers['model'];
+    const elevation = req.headers['elevation'];
 
-    // Affichage des valeurs pour vérification
     console.log('Mail:', mailCustomer);
     console.log('Customer Name:', customerName);
     console.log('Sales Rep:', salesRep);
-    console.log('Model:', Model);
-    console.log('Elevation:', Elevation);
+    console.log('Model:', model);
+    console.log('Elevation:', elevation);
 
-    // Stockage des données reçues dans un objet
     receivedData = {
         mailCustomer,
         customerName,
         salesRep,
-        model: Model,
-        elevation: Elevation
+        model,
+        elevation
     };
-    // Envoyer les données au script PHP pour générer le devis
+
+    // Envoyer les données au script PHP pour générer le fichier HTML
     axios.post('http://localhost/quotr/generate_quote.php', receivedData, {
-        responseType: 'arraybuffer' // Pour gérer le téléchargement du fichier PDF
+        responseType: 'text' // Pour gérer le téléchargement du fichier HTML
     })
     .then(response => {
-        // Définir les headers pour forcer le téléchargement du PDF
-        res.setHeader('Content-Disposition', 'attachment; filename=QUOTATION.pdf');
-        res.setHeader('Content-Type', 'application/pdf');
+        // Définir les headers pour forcer le téléchargement du fichier HTML
+        res.setHeader('Content-Disposition', 'attachment; filename=QUOTATION.html');
+        res.setHeader('Content-Type', 'text/html');
         res.send(response.data);
     })
     .catch(error => {

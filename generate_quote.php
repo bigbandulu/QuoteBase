@@ -1,8 +1,15 @@
 <?php
 require "quolib/quotr.php";
 
+// Récupérer les données envoyées depuis le formulaire
+$mailCustomer = isset($_POST['mailCustomer']) ? $_POST['mailCustomer'] : '';
+$customerName = isset($_POST['customerName']) ? $_POST['customerName'] : '';
+$salesRep = isset($_POST['salesRep']) ? $_POST['salesRep'] : '';
+$model = isset($_POST['model']) ? $_POST['model'] : '';
+$elevation = isset($_POST['elevation']) ? $_POST['elevation'] : '';
+
 // (B) SET QUOTATION DATA
-// (B2) QUOTATIONHEADER
+// (B2) QUOTATION HEADER
 $quotr->set("head", [
   ["QUOTATION #", "CB-123-456"],
   ["Valid From", date('Y-m-d')],
@@ -11,7 +18,7 @@ $quotr->set("head", [
 
 // (B3) CUSTOMER
 $quotr->set("customer", [
-  "Customer Name",
+  $customerName,
   "Street Address",
   "City, State, Zip",
   "Tel, Email"
@@ -19,19 +26,16 @@ $quotr->set("customer", [
 
 // (B4) ITEMS - SET ALL AT ONCE
 $items = [
-  ["Rubber Hose", "5m long rubber hose", 3, "$5.50", "$16.50"],
-  ["Rubber Duck", "Good bathtub companion", 8, "$4.20", "$33.60"],
-  ["Rubber Band", "", 10, "$0.10", "$1.00"],
-  ["Rubber Stamp", "", 3, "$12.30", "$36.90"],
-  ["Rubber Shoe", "For slipping, not for running", 1, "$20.00", "$20.00"]
+  ["Model", $model, 1, "-", "-"],
+  ["Elevation", $elevation, 1, "-", "-"]
 ];
 $quotr->set("items", $items);
 
 // (B5) TOTALS
 $quotr->set("totals", [
-  ["SUB-TOTAL", "$108.00"],
-  ["DISCOUNT 10%", "-$10.80"],
-  ["GRAND TOTAL", "$97.20"]
+  ["SUB-TOTAL", "-"],
+  ["DISCOUNT 10%", "-"],
+  ["GRAND TOTAL", "-"]
 ]);
 
 // (B6) NOTES, IF ANY
@@ -44,6 +48,6 @@ $quotr->set("notes", [
 $quotr->set("accept", true);
 
 // (C) OUTPUT
-$quotr->template("apple");
-$quotr->outputPDF(2, "QUOTATION.pdf");
+$quotr->template("simple");
+$quotr->outputHTML();
 ?>
