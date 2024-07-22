@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const axios = require('axios'); // Ajouté pour gérer les requêtes HTTP
 const app = express();
 const port = 3000;
 
@@ -35,7 +36,6 @@ app.post('/submit', (req, res) => {
     const Model = req.headers['model'];
     const Elevation = req.headers['elevation'];
 
-
     // Affichage des valeurs pour vérification
     console.log('Mail:', mailCustomer);
     console.log('Customer Name:', customerName);
@@ -51,8 +51,20 @@ app.post('/submit', (req, res) => {
         model: Model,
         elevation: Elevation
     };
-
-    res.send('POST request received');
+    // Envoyer les données au script PHP pour générer le devis
+    axios.post('http://localhost/quotr/generate_quote.php', receivedData, {
+        responseType: 'arraybuffer' // Pour gérer le téléchargement du fichier PDF
+    })
+    .then(response => {
+        // Définir les headers pour forcer le téléchargement du PDF
+        res.setHeader('Content-Disposition', 'attachment; filename=QUOTATION.pdf');
+        res.setHeader('Content-Type', 'application/pdf');
+        res.send(response.data);
+    })
+    .catch(error => {
+        console.error('Error generating quote:', error);
+        res.status(500).send('Error generating quote');
+    });
 });
 
 // Route pour envoyer les données JSON au client
